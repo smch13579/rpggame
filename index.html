@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG 게임</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .game-container {
+            width: 60%;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .game-text {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: #45a049;
+        }
+
+        .status-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            border-top: 2px solid #ddd;
+            padding-top: 10px;
+        }
+
+        .status-box {
+            background-color: #f2f2f2;
+            padding: 10px;
+            border-radius: 5px;
+            width: 45%;
+        }
+
+        .status-box h3 {
+            margin-top: 0;
+        }
+
+        .status-box .health {
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+
+        .status-box .info {
+            margin-top: 5px;
+        }
+
+        .status-box .health span {
+            font-weight: bold;
+        }
+
+        #enemyStatus {
+            background-color: #f8d7da;
+        }
+
+        #playerStatus {
+            background-color: #d4edda;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>RPG 모험 게임</h1>
+        <div class="game-text" id="gameText">
+            RPG 모험 게임에 오신 것을 환영합니다! 이제 모험이 시작됩니다...
+        </div>
+        <button class="btn" id="actionButton" onclick="startGame()">모험 시작</button>
+
+        <!-- 플레이어 및 적 상태 UI -->
+        <div class="status-container">
+            <!-- 플레이어 상태 -->
+            <div class="status-box" id="playerStatus">
+                <h3>플레이어 상태</h3>
+                <div class="health">체력: <span id="playerHealth">100</span></div>
+                <div class="info">공격력: 15</div>
+                <div class="info">방어력: 5</div>
+            </div>
+
+            <!-- 적 상태 -->
+            <div class="status-box" id="enemyStatus">
+                <h3>적 상태</h3>
+                <div class="health">체력: <span id="enemyHealth">50</span></div>
+                <div class="info">공격력: 10</div>
+                <div class="info">방어력: 2</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let player = {
+            name: "영웅",
+            health: 100,
+            attack: 15,
+            defense: 5,
+            level: 1
+        };
+
+        let enemy = {
+            name: "고블린",
+            health: 50,
+            attack: 10,
+            defense: 2
+        };
+
+        let gameText = document.getElementById("gameText");
+        let actionButton = document.getElementById("actionButton");
+
+        // 상태 UI 요소
+        let playerHealthDisplay = document.getElementById("playerHealth");
+        let enemyHealthDisplay = document.getElementById("enemyHealth");
+
+        function startGame() {
+            gameText.innerHTML = enemy.name + "을(를) 만났습니다! 전투 준비를 하세요!";
+            actionButton.innerText = "공격하기";
+            actionButton.setAttribute("onclick", "attackEnemy()");
+        }
+
+        function attackEnemy() {
+            let playerDamage = player.attack - enemy.defense;
+            let enemyDamage = enemy.attack - player.defense;
+
+            // 플레이어 공격
+            if (playerDamage > 0) {
+                enemy.health -= playerDamage;
+                gameText.innerHTML += `<br>당신은 ${enemy.name}에게 ${playerDamage}의 피해를 주었습니다!`;
+            } else {
+                gameText.innerHTML += `<br>당신의 공격은 ${enemy.name}에게 피해를 주지 않았습니다.`;
+            }
+
+            // 적이 쓰러졌는지 확인
+            if (enemy.health <= 0) {
+                gameText.innerHTML += `<br>${enemy.name}을(를) 처치했습니다!`;
+                actionButton.innerText = "새로운 전투 시작";
+                actionButton.setAttribute("onclick", "startNewBattle()");
+                updateStatus();
+                return;
+            }
+
+            // 적 공격
+            if (enemyDamage > 0) {
+                player.health -= enemyDamage;
+                gameText.innerHTML += `<br>${enemy.name}이(가) 당신에게 ${enemyDamage}의 피해를 주었습니다!`;
+            } else {
+                gameText.innerHTML += `<br>${enemy.name}의 공격은 피해를 주지 않았습니다.`;
+            }
+
+            // 플레이어가 쓰러졌는지 확인
+            if (player.health <= 0) {
+                gameText.innerHTML += `<br>당신은 패배했습니다! 게임 오버.`;
+                actionButton.innerText = "게임 재시작";
+                actionButton.setAttribute("onclick", "restartGame()");
+                updateStatus();
+                return;
+            }
+
+            updateStatus();
+        }
+
+        function startNewBattle() {
+            // 이전 텍스트 지우기
+            gameText.innerHTML = "";
+            // 새로운 전투 텍스트 출력
+            gameText.innerHTML = "새로운 전투가 시작되었습니다!";
+            
+            // 적 체력 초기화
+            enemy.health = 50;
+            gameText.innerHTML += `<br>${enemy.name}의 체력이 ${enemy.health}로 초기화되었습니다.`;
+            
+            actionButton.innerText = "공격하기";
+            actionButton.setAttribute("onclick", "attackEnemy()");
+            updateStatus();
+        }
+
+        function restartGame() {
+            // 게임 초기화
+            player.health = 100;
+            player.attack = 15;
+            player.defense = 5;
+            enemy.health = 50;
+            enemy.attack = 10;
+            enemy.defense = 2;
+
+            // 기존 텍스트 지우기
+            gameText.innerHTML = "";
+            gameText.innerHTML = "RPG 모험 게임에 오신 것을 환영합니다! 이제 모험이 시작됩니다...";
+            actionButton.innerText = "모험 시작";
+            actionButton.setAttribute("onclick", "startGame()");
+            updateStatus();
+        }
+
+        function updateStatus() {
+            playerHealthDisplay.textContent = player.health;
+            enemyHealthDisplay.textContent = enemy.health;
+        }
+    </script>
+
+</body>
+</html>
